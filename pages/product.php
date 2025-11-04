@@ -10,9 +10,10 @@ $cart_error = $cart_error ?? null; // Provided by index.php when POST fails
   <?php if ($product): ?>
     <div class="card" style="max-width:600px;">
       <?php if (!empty($product['image_path'])): ?>
-        <img src="<?php echo htmlspecialchars($product['image_path']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" />
+        <img src="<?php echo htmlspecialchars($product['image_path']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>"
+             onerror="this.src='https://via.placeholder.com/600x400?text=Product'" />
       <?php else: ?>
-        <img src="assets/images/placeholder1.jpg" alt="Product" />
+        <img src="https://via.placeholder.com/600x400?text=Product" alt="Product" />
       <?php endif; ?>
       <div class="content">
         <h3><?php echo htmlspecialchars($product['name']); ?></h3>

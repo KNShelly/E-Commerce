@@ -138,12 +138,18 @@ function create_user($name, $email, $password) {
     
     try {
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        
-        $sql = "INSERT INTO users (name, email, password) VALUES (:name, :email, :password)";
+        // Split provided full name into first_name and last_name
+        $full = trim($name);
+        $parts = preg_split('/\s+/', $full);
+        $first_name = $parts && count($parts) > 0 ? $parts[0] : $full;
+        $last_name = $parts && count($parts) > 1 ? implode(' ', array_slice($parts, 1)) : null;
+
+        $sql = "INSERT INTO users (email, password, first_name, last_name) VALUES (:email, :password, :first_name, :last_name)";
         $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':name', $name, PDO::PARAM_STR);
         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
         $stmt->bindParam(':password', $password_hash, PDO::PARAM_STR);
+        $stmt->bindParam(':first_name', $first_name, PDO::PARAM_STR);
+        $stmt->bindParam(':last_name', $last_name, PDO::PARAM_STR);
         
         if ($stmt->execute()) {
             $user_id = $pdo->lastInsertId();

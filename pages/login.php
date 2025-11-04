@@ -1,6 +1,7 @@
 <?php
 // Show any server-side auth errors set by index.php
 $error = $auth_error ?? null;
+$next = isset($_GET['next']) ? $_GET['next'] : null;
 ?>
 <section class="container">
   <h2>Login</h2>
@@ -9,7 +10,7 @@ $error = $auth_error ?? null;
       <?php echo htmlspecialchars($error); ?>
     </div>
   <?php endif; ?>
-  <form method="post" action="index.php?page=login" style="max-width:400px;display:grid;gap:.75rem;">
+  <form method="post" action="index.php?page=login<?php echo $next ? '&next=' . urlencode($next) : ''; ?>" style="max-width:400px;display:grid;gap:.75rem;">
     <label>
       Email
       <input type="email" name="email" placeholder="you@example.com" style="width:100%;padding:.5rem;border-radius:6px;border:1px solid #1f2937;background:#0b1220;color:#e5e7eb;" required />
@@ -18,6 +19,9 @@ $error = $auth_error ?? null;
       Password
       <input type="password" name="password" placeholder="••••••••" style="width:100%;padding:.5rem;border-radius:6px;border:1px solid #1f2937;background:#0b1220;color:#e5e7eb;" required />
     </label>
+    <?php if ($next): ?>
+      <input type="hidden" name="next" value="<?php echo htmlspecialchars($next, ENT_QUOTES, 'UTF-8'); ?>" />
+    <?php endif; ?>
     <button class="btn" type="submit">Sign In</button>
   </form>
   <p style="margin-top:.5rem;opacity:.8;">Don’t have an account? <a href="index.php?page=register">Register</a></p>

@@ -37,13 +37,22 @@ if ($page === 'login' && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     } else {
         $user = get_user_by_email($email);
         if ($user && isset($user['password']) && password_verify($password, $user['password'])) {
+            $display_name = trim((($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')));
+            if ($display_name === '') {
+                $display_name = $user['email'] ?? 'Account';
+            }
             $_SESSION['user'] = [
                 'id' => (int)$user['id'],
-                'name' => $user['name'] ?? '',
+                'name' => $display_name,
                 'email' => $user['email'] ?? '',
                 'roles' => isset($user['roles']) && $user['roles'] !== null ? explode(', ', $user['roles']) : []
             ];
-            header('Location: index.php?page=home');
+            $next = $_POST['next'] ?? ($_GET['next'] ?? null);
+            if ($next && strpos($next, '://') === false) {
+                header('Location: ' . $next);
+            } else {
+                header('Location: index.php?page=home');
+            }
             exit;
         } else {
             $auth_error = 'Invalid email or password.';

@@ -1,4 +1,84 @@
+<?php require_once __DIR__ . '/../includes/admin_guard.php'; ?>
+<?php require_once __DIR__ . '/../config/db.php'; ?>
+<?php require_once __DIR__ . '/../includes/db_functions.php'; ?>
+<?php
+$message = null;
+$edited = null;
+
+// Minimal update/delete handlers
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && db_has_connection()) {
+  $action = $_POST['action'] ?? '';
+  $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+  if ($action === 'update' && $id > 0) {
+    $name = trim($_POST['name'] ?? '');
+    $slug = trim($_POST['slug'] ?? '');
+    $price = (float)($_POST['price'] ?? 0);
+    $sale_price = $_POST['sale_price'] !== '' ? (float)$_POST['sale_price'] : null;
+    $stock = (int)($_POST['stock'] ?? 0);
+    $description = trim($_POST['description'] ?? '');
+    try {
+      // Simple inline update query (no separate helper yet)
+      $stmt = $pdo->prepare("UPDATE products SET name=:name, slug=:slug, description=:description, price=:price, sale_price=:sale_price, stock=:stock WHERE id=:id");
+      $stmt->execute([
+        ':name' => $name,
+        ':slug' => $slug,
+        ':description' => $description,
+        ':price' => $price,
+        ':sale_price' => $sale_price,
+        ':stock' => $stock,
+        ':id' => $id,
+      ]);
+      $message = 'Product updated.';
+      $edited = $id;
+    } catch (Throwable $e) {
+      $message = 'Error: ' . $e->getMessage();
+    }
+  } elseif ($action === 'delete' && $id > 0) {
+    try {
+      $stmt = $pdo->prepare("DELETE FROM products WHERE id=:id");
+      $stmt->execute([':id' => $id]);
+      $message = 'Product deleted.';
+    } catch (Throwable $e) {
+      $message = 'Error: ' . $e->getMessage();
+    }
+  }
+}
+
+$products = db_has_connection() ? get_products(null, null) : [];
+?>
+
+<?php include __DIR__ . '/../includes/header.php'; ?>
 <section class="container">
   <h2>Edit Product</h2>
-  <p>Select a product to edit. (Placeholder)</p>
+  <?php if ($message): ?>
+    <div style="margin:.75rem 0;padding:.5rem;border:1px solid #1f2937;border-radius:8px;background:#0b1220;">
+      <?php echo htmlspecialchars($message); ?>
+    </div>
+  <?php endif; ?>
+
+  <div class="row g-4">
+    <?php foreach ($products as $p): ?>
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title mb-2"><?php echo htmlspecialchars($p['name']); ?> (ID <?php echo (int)$p['id']; ?>)</h5>
+            <form method="post" class="d-grid gap-2">
+              <input type="hidden" name="id" value="<?php echo (int)$p['id']; ?>" />
+              <label>Name <input type="text" name="name" value="<?php echo htmlspecialchars($p['name']); ?>" class="form-control" /></label>
+              <label>Slug <input type="text" name="slug" value="<?php echo htmlspecialchars($p['slug']); ?>" class="form-control" /></label>
+              <label>Price <input type="number" step="0.01" min="0" name="price" value="<?php echo htmlspecialchars($p['price']); ?>" class="form-control" /></label>
+              <label>Sale Price <input type="number" step="0.01" min="0" name="sale_price" value="<?php echo htmlspecialchars($p['sale_price'] ?? ''); ?>" class="form-control" /></label>
+              <label>Stock <input type="number" step="1" min="0" name="stock" value="<?php echo (int)$p['stock']; ?>" class="form-control" /></label>
+              <label>Description <textarea name="description" rows="3" class="form-control"><?php echo htmlspecialchars($p['description'] ?? ''); ?></textarea></label>
+              <div class="d-flex gap-2">
+                <button class="btn btn-dark" type="submit" name="action" value="update">Update</button>
+                <button class="btn btn-outline-danger" type="submit" name="action" value="delete" onclick="return confirm('Delete this product?');">Delete</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  </div>
 </section>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
