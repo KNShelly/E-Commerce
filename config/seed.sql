@@ -25,6 +25,14 @@ INSERT INTO categories (name, slug, description, parent_id) VALUES
 ('Gaming', 'gaming', 'Gaming equipment and accessories', NULL),
 ('Audio', 'audio', 'Headphones, speakers, and audio equipment', 1);
 
+-- New high-level categories
+INSERT INTO categories (name, slug, description, parent_id) VALUES
+('Fashion', 'fashion', 'Clothing, shoes, and accessories', NULL),
+('Home & Living', 'home-living', 'Furniture, decor, and household items', NULL),
+('Beauty', 'beauty', 'Skincare, haircare, and cosmetics', NULL),
+('Accessories', 'accessories', 'Bags, jewelry, watches, and extras', NULL),
+('Shoes', 'shoes', 'Footwear for men, women, and kids', NULL);
+
 -- Link products to categories
 INSERT INTO product_category (product_id, category_id) VALUES
 (1, 1), -- Sample Product -> Default
@@ -52,7 +60,16 @@ INSERT INTO reviews (product_id, user_id, rating, title, body, approved) VALUES
 INSERT INTO settings (`key`, `value`) VALUES
 ('site_name', 'E-Commerce Store'),
 ('site_description', 'Your one-stop shop for electronics and gaming gear'),
-('currency', 'USD'),
+('currency', 'KSh'),
 ('tax_rate', '0.08'),
-('shipping_rate', '9.99'),
-('free_shipping_threshold', '100.00');
+('delivery_base_fee', '150'),
+('delivery_per_km', '50'),
+('free_delivery_threshold', '0')
+ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
+
+-- Backward-compat: if shipping keys were inserted earlier, keep them in sync for legacy code paths
+-- Optional: you may remove shipping_rate/free_shipping_threshold once all code paths use delivery
+INSERT INTO settings (`key`, `value`) VALUES
+('shipping_rate', '0'),
+('free_shipping_threshold', '0.00')
+ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);

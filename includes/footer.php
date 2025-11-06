@@ -5,7 +5,7 @@
     $base = $in_admin ? '..' : '.';
   }
 ?>
-<footer class="container mt-5 py-4">
+<footer class="container-fluid mt-5 py-4">
   <p class="text-muted mb-0">&copy; <?php echo date('Y'); ?> E‑Commerce</p>
   <small class="text-muted">All categories · Great prices</small>
 </footer>

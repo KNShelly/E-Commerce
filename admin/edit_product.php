@@ -4,6 +4,12 @@
 <?php
 $message = null;
 $edited = null;
+// Load top-level categories for selection in forms
+if (db_has_connection()) {
+  // Seed core categories if missing so admin can select them
+  ensure_core_categories_seeded();
+}
+$allCategories = db_has_connection() ? get_categories(null) : [];
 
 // Minimal update/delete handlers
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && db_has_connection()) {
@@ -30,6 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && db_has_connection()) {
       ]);
       $message = 'Product updated.';
       $edited = $id;
+
+      // Update category associations
+      $catIds = isset($_POST['category_ids']) ? (array)$_POST['category_ids'] : [];
+      set_product_categories($id, $catIds);
     } catch (Throwable $e) {
       $message = 'Error: ' . $e->getMessage();
     }
@@ -70,6 +80,24 @@ $products = db_has_connection() ? get_products(null, null) : [];
               <label>Sale Price <input type="number" step="0.01" min="0" name="sale_price" value="<?php echo htmlspecialchars($p['sale_price'] ?? ''); ?>" class="form-control" /></label>
               <label>Stock <input type="number" step="1" min="0" name="stock" value="<?php echo (int)$p['stock']; ?>" class="form-control" /></label>
               <label>Description <textarea name="description" rows="3" class="form-control"><?php echo htmlspecialchars($p['description'] ?? ''); ?></textarea></label>
+              <?php $selectedCats = db_has_connection() ? get_product_category_ids((int)$p['id']) : []; ?>
+              <fieldset class="border rounded p-2">
+                <legend class="float-none w-auto px-2">Categories</legend>
+                <?php if (!empty($allCategories)): ?>
+                  <div class="row row-cols-2 g-2">
+                    <?php foreach ($allCategories as $cat): ?>
+                      <div class="col">
+                        <label class="form-check">
+                          <input class="form-check-input" type="checkbox" name="category_ids[]" value="<?php echo (int)$cat['id']; ?>" <?php echo in_array((int)$cat['id'], $selectedCats, true) ? 'checked' : ''; ?> />
+                          <span class="form-check-label"><?php echo htmlspecialchars($cat['name']); ?></span>
+                        </label>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
+                <?php else: ?>
+                  <div class="text-muted">No categories found.</div>
+                <?php endif; ?>
+              </fieldset>
               <div class="d-flex gap-2">
                 <button class="btn btn-dark" type="submit" name="action" value="update">Update</button>
                 <button class="btn btn-outline-danger" type="submit" name="action" value="delete" onclick="return confirm('Delete this product?');">Delete</button>

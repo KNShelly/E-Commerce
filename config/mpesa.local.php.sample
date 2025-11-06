@@ -1,0 +1,22 @@
+<?php
+// Local M-Pesa credentials override for development/testing.
+// Copy this file to mpesa.local.php and fill in your real values.
+// IMPORTANT: Do not commit mpesa.local.php to version control.
+
+// Environment: 'sandbox' or 'production'
+$MPESA_ENV = 'sandbox';
+
+// Credentials
+$MPESA_CONSUMER_KEY = 'your_consumer_key_here';
+$MPESA_CONSUMER_SECRET = 'your_consumer_secret_here';
+
+// Business shortcode and passkey
+$MPESA_SHORTCODE = '174379'; // Example: Safaricom Sandbox Shortcode
+$MPESA_PASSKEY = 'your_passkey_here';
+
+// Public callback URL (e.g., from ngrok)
+$MPESA_CALLBACK_URL = 'https://your-ngrok-subdomain.ngrok.io/e-commerce/index.php?page=mpesa_callback';
+
+// Optional
+$MPESA_ACCOUNT_REF = 'ECommerceOrder';
+$MPESA_TXN_DESC = 'Order payment';
